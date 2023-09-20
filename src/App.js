@@ -1,19 +1,22 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
+import SingleCard from './components/SingleCard'
 
 const cardImages = [
-  {"src": "/img/Bulbasaur.png"},
-  {"src": "/img/Charmander.png"},
-  {"src": "/img/Squirtle.png"},
-  {"src": "/img/Pikachu.png"},
-  {"src": "/img/Dratini.png"},
-  {"src": "/img/Mew.png"},
+  {"src": "/img/Bulbasaur.png", matched: false},
+  {"src": "/img/Charmander.png", matched: false},
+  {"src": "/img/Squirtle.png", matched: false},
+  {"src": "/img/Pikachu.png", matched: false},
+  {"src": "/img/Dratini.png", matched: false},
+  {"src": "/img/Mew.png", matched: false,}
 ]
 
 function App() {
 
   const [cards, setCards] = useState([])
   const [turns, setTurns] = useState(0)
+  const [choiceOne, setChoiceOne] = useState(null)
+  const [choiceTwo, setChoiceTwo] = useState(null)
 
   // shuffle cards
   const shuffleCards = () => {
@@ -25,7 +28,42 @@ function App() {
     setTurns(0)
   }
 
-  console.log(cards, turns)
+  // handle a choice
+  const handleChoice = (card) => {
+    choiceOne ? setChoiceTwo(card) : setChoiceOne(card)
+  }
+
+  //compare 2 selected cards
+  useEffect(() =>{
+    if (choiceOne && choiceTwo){
+
+      if (choiceOne.src === choiceTwo.src){
+        setCards(prevCards => {
+          return prevCards.map(card => {
+            if (card.src === choiceOne.src){
+              return {...card, matched: true }
+            } else {
+              return card
+            }
+          })
+        })
+
+        resetTurn()
+      } else {
+        console.log("those cards !=")
+        setTimeout(() => resetTurn(), 1000)
+      }
+    }
+  }, [choiceOne, choiceTwo])
+
+  console.log(cards)
+
+  // reset choices & increase turn
+  const resetTurn = () => {
+    setChoiceOne(null)
+    setChoiceTwo(null)
+    setTurns(prevTurns => prevTurns +1)
+  }
 
   return (
     <div className="App">
@@ -34,12 +72,12 @@ function App() {
 
       <div className="card-grid">
         {cards.map(card => (
-          <div className="card" key={card.id} >
-            <div>
-              <img src={card.src} className="front" alt="card front" size='10%'/>
-              <img src={"/img/cover.png"} className='back' alt="card back" size='10%' />
-            </div>
-          </div>
+          <SingleCard 
+          key={card.id} 
+          card={card}
+          handleChoice = {handleChoice}
+          flipped={card === choiceOne || card === choiceTwo || card.matched} 
+          />
         ))}
       </div>
     </div>
